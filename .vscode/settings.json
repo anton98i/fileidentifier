@@ -1,0 +1,15 @@
+{
+  "cSpell.words": [
+    "Extd",
+    "ULONGLONG",
+    "bufsize",
+    "gcflags",
+    "golint",
+    "idxhi",
+    "idxlo",
+    "inode",
+    "syscall"
+  ],
+  // enable/disable windows refs for testing on windows
+  // "go.testTags":  "refs",
+}
