@@ -29,7 +29,7 @@ func (f FileIdentifier) GetGlobalFileID() *big.Int {
 }
 
 // GetFileIdentifierFromGetGlobalFileID returns a FileIdentifier by a GlobalFileID
-func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier {
+func GetFileIdentifierFromGetGlobalFileID(n *big.Int) *FileIdentifier {
 	tmpPtr := new(big.Int)
 	tmpPtr.Set(n)
 	var resultTmp big.Int
@@ -39,7 +39,7 @@ func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier {
 	idxHi := resultTmp.And(tmpPtr.Rsh(tmpPtr, 64), andOperator).Uint64()
 	vol := resultTmp.And(tmpPtr.Rsh(tmpPtr, 64), andOperator).Uint64()
 
-	return FileIdentifier{
+	return &FileIdentifier{
 		vol:   vol,
 		idxHi: idxHi,
 		idxLo: idxLo,
@@ -83,15 +83,21 @@ func GetFileIdentifierByFile(f *os.File) (*FileIdentifier, error) {
 }
 
 // GetFileIdentifier returns the platform specific FileIdentifier
-func GetFileIdentifier(i os.FileInfo) FileIdentifier {
+func GetFileIdentifier(i os.FileInfo) (*FileIdentifier, error) {
 	// in this scenario it is not possible to get the full file id as go uses the "old" GetFileInformationByHandle and not the new GetFileInformationByHandleEx
 
-	// according to that are the ids are used for samefile
+	// according to that are the ids used for samefile
 	// https://golang.org/src/os/types_windows.go#L65
 	// according to that gets the file information allways loaded and skipped if already done =>
 	// https://golang.org/src/os/types_windows.go#L216
 	// => call SameFile to make the the values are set
-	os.SameFile(i, i)
+	// os.FileInfo is a interface, which is a pointer
+	//
+	// it is already filled called with stat method of a file it https://golang.org/src/os/stat_windows.go#L15
+	if !os.SameFile(i, i) {
+		// the implementation of SameFile will return false if on any file occurred an error
+		return nil, fmt.Errorf("error getting ids")
+	}
 
 	// Gathering fileStat through reflection as otherwise not accessible
 	// https://golang.org/src/os/types_windows.go#L65
@@ -102,41 +108,9 @@ func GetFileIdentifier(i os.FileInfo) FileIdentifier {
 	// needed go fields are here defined: https://golang.org/src/os/types_windows.go#L16
 	// Uint returns a uint64, but the values are actually 32 => safe to cast as uint32
 	// to get the full id use GetFileIdentifierByFile instead that uses GetFileInformationByHandleEx
-	return FileIdentifier{
+	return &FileIdentifier{
 		idxHi: 0,
 		idxLo: (fileStat.FieldByName("idxhi").Uint() << 32) + fileStat.FieldByName("idxlo").Uint(),
 		vol:   fileStat.FieldByName("vol").Uint(),
-	}
-}
-
-// iterateAllFileIdentifier is for for tests
-func iterateAllFileIdentifier(cb func(globalId, expectedFileID *big.Int, vol, idxHi, idxLo uint64, f FileIdentifier)) {
-	f := FileIdentifier{}
-
-	expected := big.NewInt(0)
-	iterateAllUint64(18446744073709551615, func(vol uint64) {
-		bigIdxVol := getBigInt(vol, 128)
-		expected.Add(expected, bigIdxVol)
-		iterateAllUint64(18446744073709551615, func(idxHi uint64) {
-			bigIdxHi := getBigInt(idxHi, 64)
-			expected.Add(expected, bigIdxHi)
-			iterateAllUint64(18446744073709551615, func(idxLo uint64) {
-				f.vol = vol
-				f.idxHi = idxHi
-				f.idxLo = idxLo
-
-				bigIdxLo := getBigInt(idxLo, 0)
-				expected.Add(expected, bigIdxLo)
-
-				expectedFileID := big.NewInt(0)
-				expectedFileID.Add(bigIdxHi, bigIdxLo)
-
-				cb(expected, expectedFileID, vol, idxHi, idxLo, f)
-
-				expected.Sub(expected, bigIdxLo)
-			})
-			expected.Sub(expected, bigIdxHi)
-		})
-		expected.Sub(expected, bigIdxVol)
-	})
+	}, nil
 }

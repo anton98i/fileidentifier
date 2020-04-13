@@ -8,10 +8,9 @@ Get by File safer way
 ``` go
 func GetFileIdentifierByFile(f *os.File) (*FileIdentifier, error)
 ```
-Faster one that uses the values set by fileInfo already
-(but if a error occurs, the ids are 0 in windows: https://golang.org/src/os/types_windows.go#L216)
+Faster one that uses the values set by fileInfo already (not supporting 128bit in refs mode)
 ``` go
-func GetFileIdentifier(i os.FileInfo) FileIdentifier
+func GetFileIdentifier(i os.FileInfo) (*FileIdentifier, error)
 ```
 
 the return FileIdentifier has the following attributes:

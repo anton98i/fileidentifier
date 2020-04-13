@@ -52,9 +52,12 @@ func TestGetFileIdentifier(t *testing.T) {
 	fileinfo, err := file.Stat()
 	expectNil(t, err)
 
-	state := GetFileIdentifier(fileinfo)
+	state, err := GetFileIdentifier(fileinfo)
+	if err != nil {
+		t.Errorf("GetFileIdentifier error: %v", err)
+	}
 
-	checkFileIdentifierBasic(t, state, *f)
+	checkFileIdentifierBasic(t, *state, *f)
 
 	// idxHi may be 0
 	// expectTrue(t, state.idxHi > 0)
@@ -74,9 +77,12 @@ func TestGetFileIdentifierStat(t *testing.T) {
 	fileinfo, err := os.Stat(file.Name())
 	expectNil(t, err)
 
-	state := GetFileIdentifier(fileinfo)
+	state, err := GetFileIdentifier(fileinfo)
+	if err != nil {
+		t.Errorf("GetFileIdentifier error: %v", err)
+	}
 
-	checkFileIdentifierBasic(t, state, *f)
+	checkFileIdentifierBasic(t, *state, *f)
 
 	// idxHi may be 0
 	// expectTrue(t, state.idxHi > 0)
@@ -145,7 +151,7 @@ func TestGetIDAllPossibleValues(t *testing.T) {
 			t.Errorf("compare failed, expected: %s, received: %s", expectedFileID.String(), f.GetFileID().String())
 		}
 
-		checkFileIdentifierBasic(t, GetFileIdentifierFromGetGlobalFileID(f.GetGlobalFileID()), f)
+		checkFileIdentifierBasic(t, *GetFileIdentifierFromGetGlobalFileID(f.GetGlobalFileID()), f)
 	})
 }
 

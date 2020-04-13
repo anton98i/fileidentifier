@@ -3,6 +3,7 @@
 package fileidentifier
 
 import (
+	"fmt"
 	"math/big"
 	"os"
 	"syscall"
@@ -32,7 +33,7 @@ func (f FileIdentifier) GetGlobalFileID() *big.Int {
 }
 
 // GetFileIdentifierFromGetGlobalFileID returns a FileIdentifier by a GlobalFileID
-func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier {
+func GetFileIdentifierFromGetGlobalFileID(n *big.Int) *FileIdentifier {
 	tmpPtr := new(big.Int)
 	tmpPtr.Set(n)
 	var resultTmp big.Int
@@ -41,7 +42,7 @@ func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier {
 	inode := resultTmp.And(tmpPtr, andOperator).Uint64()
 	device := resultTmp.And(tmpPtr.Rsh(tmpPtr, 64), andOperator).Uint64()
 
-	return FileIdentifier{
+	return &FileIdentifier{
 		device: device,
 		inode:  inode,
 	}
@@ -58,7 +59,7 @@ func GetFileIdentifierByFile(f *os.File) (*FileIdentifier, error) {
 }
 
 // GetFileIdentifier returns the platform specific FileIdentifier
-func GetFileIdentifier(i os.FileInfo) FileIdentifier {
+func GetFileIdentifier(i os.FileInfo) (*FileIdentifier, error) {
 
 	/* not always necessary
 	// make sure thd ids are set to force setting them by compared the file (this checks the ids)
@@ -68,14 +69,15 @@ func GetFileIdentifier(i os.FileInfo) FileIdentifier {
 	}
 	*/
 
-	stat := i.Sys().(*syscall.Stat_t)
+	stat, ok := i.Sys().(*syscall.Stat_t)
+	if !ok {
+		return fmt.Errorf("Not a syscall.Stat_t")
+	}
 
 	// Get the two fields required to uniquely identify file
 	// https://golang.org/pkg/syscall/#Stat_t
-	fileState := FileIdentifier{
+	return &FileIdentifier{
 		device: uint64(stat.Dev),
 		inode:  uint64(stat.Ino),
-	}
-
-	return fileState
+	}, nil
 }
