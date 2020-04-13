@@ -1,6 +1,7 @@
 package fileidentifier
 
 import (
+	"fmt"
 	"math/big"
 	"os"
 )
@@ -26,6 +27,16 @@ func getBigIntRsh(num uint64, n uint) *big.Int {
 	// Rsh: https://golang.org/src/math/big/int.go?s=25450:25488#L990
 	// shr: https://golang.org/src/math/big/nat.go#L1006
 	return n1.Rsh(&n1, n)
+}
+
+// GetFileIdentifierByPath gets a fileidentifier by path
+// it just opens the path and calls GetFileIdentifierByFile
+func GetFileIdentifierByPath(path string) (*FileIdentifier, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("GetFileIdentifierByPath open path %v error: %v", path, err)
+	}
+	return GetFileIdentifierByFile(f)
 }
 
 // GetGlobalFileID returns the file id
