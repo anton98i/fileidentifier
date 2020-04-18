@@ -52,19 +52,19 @@ DESCRIPTION
 func getFileIDFromCommandEx(t *testing.T, file *os.File) *big.Int {
 	out, err := exec.Command("stat", "-c %i", file.Name()).Output()
 	if err != nil {
-		t.Errorf("exec.Command(stat -c %i %v).Output() failed: %v", file.Name(), err)
+		t.Errorf("exec.Command(stat -c %%i %v).Output() failed: %v", file.Name(), err)
 	}
 	expectedFileID := new(big.Int)
 	expectedFileID.SetString(string(out), 10)
 	return expectedFileID
 }
 
-func iterateAllFileIdentifier(cb func(globalId, expectedFileID *big.Int, dev, inode uint64)) {
+func iterateAllFileIdentifier(cb func(globalId *big.Int, expectedFileID, dev, inode uint64)) {
 	expected := big.NewInt(0)
-	iterateAllUint64(0, func(dev uint64) {
+	iterateAllUint64(18446744073709551615, func(dev uint64) {
 		devBig := getBigInt(dev, 64)
 		expected.Add(expected, devBig)
-		iterateAllUint64(0, func(inode uint64) {
+		iterateAllUint64(18446744073709551615, func(inode uint64) {
 			inodeBig := getBigInt(inode, 0)
 			expected.Add(expected, inodeBig)
 
@@ -76,31 +76,39 @@ func iterateAllFileIdentifier(cb func(globalId, expectedFileID *big.Int, dev, in
 	})
 }
 
-func TestGetIDAllPossibleValuesUnix(t *testing.T) {
-	f := FileIdentifier{}
+func checkFileIdentifierBasic(t *testing.T, _f, _expected FileIdentifier) {
+	f := _f.(*fileIdentifier)
+	expected := _expected.(*fileIdentifier)
+	if f.device != expected.device {
+		t.Errorf("checkFileIdentifierBasic vol failed, expected: %d, received: %d", expected.device, f.device)
+	}
+	if f.inode != expected.inode {
+		t.Errorf("checkFileIdentifierBasic idxHi failed, expected: %d, received: %d", expected.inode, f.inode)
+	}
+	if f.GetFileID() != expected.GetFileID() {
+		t.Errorf("checkFileIdentifierBasic GetFileID failed, expected: %d, received: %d", expected.GetFileID(), f.GetFileID())
+	}
+}
 
-	iterateAllFileIdentifier(func(globalId *big.Int, expectedFileID uint64, dev, inode uint64) {
+func TestGetIDAllPossibleValuesUnix(t *testing.T) {
+	f := &fileIdentifier{}
+
+	iterateAllFileIdentifier(func(expected *big.Int, expectedFileID, dev, inode uint64) {
 		f.device = dev
 		f.inode = inode
 
-		if f.GetDeviceID() != vol {
-			t.Errorf("f.GetDeviceID() != vol, expected: %d, received: %d", vol, f.GetDeviceID())
+		if f.GetDeviceID() != dev {
+			t.Errorf("f.GetDeviceID() != dev, expected: %d, received: %d", dev, f.GetDeviceID())
 		}
 
 		if expected.Cmp(f.GetGlobalFileID()) != 0 {
-			t.Errorf("expected.Cmp(f.GetGlobalFileID()) != 0, expected: %s, received: %s", expected.String(), f.GetID().String())
+			t.Errorf("expected.Cmp(f.GetGlobalFileID()) != 0, expected: %s, received: %s", expected.String(), f.GetGlobalFileID().String())
 		}
 
-		if inodeBig != f.GetFileID() {
-			t.Errorf("inodeBig != f.GetFileID(), expected: %d, received: %d", inodeBig, f.GetFileID())
+		if expectedFileID != f.GetFileID() {
+			t.Errorf("expectedFileID != f.GetFileID(), expected: %d, received: %d", expectedFileID, f.GetFileID())
 		}
 
-		newF := GetFileIdentifierFromGetGlobalFileID(f.GetGlobalFileID())
-		if newF.device != device {
-			t.Errorf("GetFileIdentifierFromGetGlobalFileID device failed, expected: %d, received: %d", device, newF.device)
-		}
-		if newF.inode != inode {
-			t.Errorf("GetFileIdentifierFromGetGlobalFileID inode failed, expected: %d, received: %d", inode, newF.inode)
-		}
+		checkFileIdentifierBasic(t, GetFileIdentifierFromGetGlobalFileID(f.GetGlobalFileID()), f)
 	})
 }

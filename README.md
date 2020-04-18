@@ -69,3 +69,36 @@ func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier
 ``` go
 func GetFileIdentifierFromGetGlobalFileIDEx(n *big.Int) FileIdentEx
 ```
+
+## Run build
+``` bash
+go build
+```
+
+different os:
+``` bash
+# windows and linus 64 bit
+env GOOS=windows GOARCH=amd64 go build
+env GOOS=linux GOARCH=amd64 go build
+
+# windows and linux 32 bit
+env GOOS=windows GOARCH=386 go build
+env GOOS=linux GOARCH=386 go build
+```
+
+## Run tests
+runs the tests
+``` bash
+go test -v ./...
+```
+
+different os (test itself won't run, only if compile of the test works is checked):
+``` bash
+# windows and linus 64 bit
+env GOOS=windows GOARCH=amd64 go test -v ./...
+env GOOS=linux GOARCH=amd64 go test -v ./...
+
+# windows and linux 32 bit
+env GOOS=windows GOARCH=386 go test -v ./...
+env GOOS=linux GOARCH=386 go test -v ./...
+```

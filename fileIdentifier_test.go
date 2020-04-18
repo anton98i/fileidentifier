@@ -96,6 +96,7 @@ func iterateAllUint64(max uint64, cb func(count uint64)) {
 	var addvalue uint64
 	for lastValie := i; i >= lastValie && i < max; i = i + addvalue {
 		cb(i)
+		// skip values (iterating really all values would take too long)
 		addvalue = addvalue*3000/2 + 100
 		lastValie = i
 	}
