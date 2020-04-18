@@ -50,12 +50,15 @@ DESCRIPTION
 */
 
 func getFileIDFromCommandEx(t *testing.T, file *os.File) *big.Int {
-	out, err := exec.Command("stat", "-c %i", file.Name()).Output()
+	out, err := exec.Command("stat", "-c \"%i\"", file.Name()).Output()
 	if err != nil {
 		t.Errorf("exec.Command(stat -c %%i %v).Output() failed: %v", file.Name(), err)
 	}
 	expectedFileID := new(big.Int)
 	expectedFileID.SetString(string(out), 10)
+	t.Logf("filename: %s", file.Name())
+	t.Logf("stat id output: %s", string(out))
+	t.Logf("stat id parsed: %s", expectedFileID.String())
 	return expectedFileID
 }
 
