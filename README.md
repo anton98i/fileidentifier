@@ -9,10 +9,13 @@ Ways to get a FileIdentifier:
 func GetFileIdentifierByFile(f *os.File) (FileIdentifier, error)
 ```
 ``` go
-func GetFileIdentifier(i os.FileInfo) (FileIdentifier, error)
-```
-``` go
 func GetFileIdentifierByFileEx(f *os.File) (FileIdentEx, error)
+```
+
+
+A FileIdentifier can also be received by a os.FileInfo, but that uses at windows private fields which go might change later.
+``` go
+func GetFileIdentifier(i os.FileInfo) (FileIdentifier, error)
 ```
 
 
