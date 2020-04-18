@@ -1,4 +1,4 @@
-module github.com/anton98i/fileIdentifier
+module github.com/anton98i/fileidentifier
 
 go 1.13
 
