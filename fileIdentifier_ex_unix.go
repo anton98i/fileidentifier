@@ -41,12 +41,12 @@ func GetFileIdentifierFromGetGlobalFileIDEx(n *big.Int) FileIdentEx {
 
 // GetFileIdentifierByFile method
 func GetFileIdentifierByFileEx(f *os.File) (FileIdentEx, error) {
-	info, err := GetFileIdentifierByFile(i)
+	info, err := GetFileIdentifierByFile(f)
 	if err != nil {
 		return nil, err
 	}
 	return &fileIdentEx{
 		device: info.(*fileIdentifier).device,
 		inode:  info.(*fileIdentifier).inode,
-	}
+	}, nil
 }
