@@ -1,0 +1,21 @@
+language: go
+
+go:
+- 1.x
+- 1.13.x
+- release
+- tip # The latest version of Go.
+
+os:
+- windows
+- linux
+- osx
+
+sudo: false
+
+before_install:
+- go get -v ./...
+
+script:
+- go test -v ./...
+- go build

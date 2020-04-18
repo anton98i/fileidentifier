@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/anton98i/fileIdentifier.svg?branch=master)](https://travis-ci.org/anton98i/fileIdentifier)
 # FileIdentifier
 FileIdentifier as a go module that read the ID/Device ID of a a file on linux/windows as thais is a os specific operation.
 
