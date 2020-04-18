@@ -1,49 +1,62 @@
 # FileIdentifier
+FileIdentifier as a go module that read the ID/Device ID of a a file on linux/windows as thais is a os specific operation.
 
 
-## Exported Types
+## Exported Functions to get a file identifier
+Ways to get a FileIdentifier:
+
+``` go
+func GetFileIdentifierByFile(f *os.File) (FileIdentifier, error)
+```
+``` go
+func GetFileIdentifier(i os.FileInfo) (FileIdentifier, error)
+```
+``` go
+func GetFileIdentifierByFileEx(f *os.File) (FileIdentEx, error)
+```
+
+
+## Exported interfaces
+``` go
+// FileIdentifier interface
+type FileIdentifier interface {
+	// GetGlobalFileID returns the device id + file id combined to one id (a "uint128")
+	GetGlobalFileID() *big.Int
+
+	// GetDeviceID returns the device id (on windows it is a uint32 casted as uint64)
+	GetDeviceID() uint64
+
+	// GetFileID returns the file id
+	GetFileID() uint64
+}
+
+// FileIdentEx interface
+type FileIdentEx interface {
+	// GetGlobalFileID returns the device id + file id combined to one id (a "uint192")
+	GetGlobalFileID() *big.Int
+
+	// GetDeviceID returns the device id
+	GetDeviceID() uint64
+
+	// GetFileID returns the file id as a "uint128"
+	GetFileID() *big.Int
+}
+```
+
+The difference between these two types is only at windows a difference:
+*  FileIdentEx uses a uint64 device ID instead of uint32
+*  FileIdentEx uses a "uint128" file ID instead of a uint64 => according to windows documentation are 128 bit IDs used at ReFS
+
+## Exported Functions to get a file identifier
 2 Ways to get FileIdentifier:
 
-Get by File safer way
-``` go
-func GetFileIdentifierByFile(f *os.File) (*FileIdentifier, error)
-```
-Faster one that uses the values set by fileInfo already (not supporting 128bit in refs mode)
-``` go
-func GetFileIdentifier(i os.FileInfo) (*FileIdentifier, error)
-```
 
-the return FileIdentifier has the following attributes:
-``` go
-func (f FileIdentifier) GetFileID() *big.Int
-```
-GetGlobalFileID returns 64 bit at unix/windows, 128 bit on windows with refs flag.
-``` go
-func (f FileIdentifier) GetDeviceID() uint64
-```
-GetDeviceID on windows without refs flag just returns a uint32 casted as a uint64.
-``` go
-func (f FileIdentifier) GetGlobalFileID() *big.Int
-```
-GetGlobalFileID returns 128 bit at unix/windows, 192 bit on windows with refs flag.
+GetFileIdentifierByFile
 
-
-The return value of GetGlobalFileID can get used to create the FileIdentifier again. Needs to be same os to work correctly.
+The return value of GetGlobalFileID can get used to create the FileIdentifier again. Needs to be on same os to work correctly.
 ``` go
 func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier
 ```
-
-## build with windows GetFileInformationByHandleEx
-Building with "refs" flag uses the GetFileInformationByHandleEx to get 128 bit file id as used at ReFS filesystem.
-
-The function "GetFileIdentifierByFile" needs to be used to get 128bit, "GetFileIdentifier" uses the go values that are 64 bit (they just get casted as 128 bit).
-
-Go is not providing a function to us => much copy from go internal folder syscall, not really nice, as it may change later but there is no other way.
-
-Additionally constants got changed, so golint to not give errors => do not use the constants.
-
-The file "customFileInfo_windows.go" got created to use GetFileInformationByHandleEx to get file IDs.
-
-```bash
-go build -tags refs
+``` go
+func GetFileIdentifierFromGetGlobalFileIDEx(n *big.Int) FileIdentEx
 ```

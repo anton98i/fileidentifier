@@ -1,15 +1,19 @@
 {
   "cSpell.words": [
+    "Datei",
     "Extd",
     "ULONGLONG",
     "bufsize",
+    "fsutil",
     "gcflags",
     "golint",
     "idxhi",
     "idxlo",
     "inode",
-    "syscall"
+    "queryfileid",
+    "syscall",
+    "uint"
   ],
-  // enable/disable windows refs for testing on windows
-  // "go.testTags":  "refs",
+  // disable test cache
+  "go.testFlags": ["-count=1"]
 }

@@ -4,7 +4,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/anton98i/FileIdentifier/internal/windows/sysdll"
+	"github.com/anton98i/fileIdentifier/internal/windows/sysdll"
 )
 
 var _ unsafe.Pointer

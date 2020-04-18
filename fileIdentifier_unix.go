@@ -61,17 +61,15 @@ func GetFileIdentifierByFile(f *os.File) (*FileIdentifier, error) {
 // GetFileIdentifier returns the platform specific FileIdentifier
 func GetFileIdentifier(i os.FileInfo) (*FileIdentifier, error) {
 
-	/* not always necessary
-	// make sure thd ids are set to force setting them by compared the file (this checks the ids)
+	/* not necessary
 	if !os.SameFile(i, i) {
-		// no should not happen
-		panic("os.SameFile is not the same file for the same file info")
+		return nil, fmt.Errorf("error getting ids")
 	}
 	*/
 
 	stat, ok := i.Sys().(*syscall.Stat_t)
 	if !ok {
-		return fmt.Errorf("Not a syscall.Stat_t")
+		return nil, fmt.Errorf("Not a syscall.Stat_t")
 	}
 
 	// Get the two fields required to uniquely identify file
