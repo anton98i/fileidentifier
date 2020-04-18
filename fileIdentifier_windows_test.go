@@ -3,25 +3,8 @@ package fileidentifier
 import (
 	"math/big"
 	"os"
-	"os/exec"
-	"strings"
 	"testing"
 )
-
-func getFileIDFromCommandEx(t *testing.T, file *os.File) *big.Int {
-	out, err := exec.Command("fsutil", "file", "queryfileid", file.Name()).Output()
-	if err != nil {
-		t.Errorf("exec.Command(fsutil file queryfileid %v).Output() failed: %v", file.Name(), err)
-	}
-	splitted := strings.Split(string(out), "0x")
-	if len(splitted) != 2 {
-		t.Errorf("out (%s) is no in the correct format, expected someting like: 'Datei-ID: 0x000000000000000000030000000618a1'", out)
-		t.FailNow()
-	}
-	expectedFileID := new(big.Int)
-	expectedFileID.SetString(splitted[1], 16)
-	return expectedFileID
-}
 
 func checkFileIdentifierBasic(t *testing.T, _f, _expected FileIdentifier) {
 	f := _f.(*fileIdentifier)
