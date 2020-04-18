@@ -9,31 +9,31 @@ import (
 	"syscall"
 )
 
-// FileIdentifier struct
-type FileIdentifier struct {
+// fileIdentifier struct
+type fileIdentifier struct {
 	device uint64
 	inode  uint64
 }
 
 // GetDeviceID returns the device id
-func (f FileIdentifier) GetDeviceID() uint64 {
+func (f *fileIdentifier) GetDeviceID() uint64 {
 	return f.device
 }
 
 // GetFileID returns the file id
-func (f FileIdentifier) GetFileID() uint64 {
+func (f *fileIdentifier) GetFileID() uint64 {
 	return f.inode
 }
 
 // GetGlobalFileID returns the file id
-func (f FileIdentifier) GetGlobalFileID() *big.Int {
+func (f *fileIdentifier) GetGlobalFileID() *big.Int {
 	n := getBigInt(f.device, 64)
 	n.Add(n, getBigInt(f.inode, 0))
 	return n
 }
 
 // GetFileIdentifierFromGetGlobalFileID returns a FileIdentifier by a GlobalFileID
-func GetFileIdentifierFromGetGlobalFileID(n *big.Int) *FileIdentifier {
+func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier {
 	tmpPtr := new(big.Int)
 	tmpPtr.Set(n)
 	var resultTmp big.Int
@@ -42,24 +42,23 @@ func GetFileIdentifierFromGetGlobalFileID(n *big.Int) *FileIdentifier {
 	inode := resultTmp.And(tmpPtr, andOperator).Uint64()
 	device := resultTmp.And(tmpPtr.Rsh(tmpPtr, 64), andOperator).Uint64()
 
-	return &FileIdentifier{
+	return &fileIdentifier{
 		device: device,
 		inode:  inode,
 	}
 }
 
 // GetFileIdentifierByFile method
-func GetFileIdentifierByFile(f *os.File) (*FileIdentifier, error) {
+func GetFileIdentifierByFile(f *os.File) (FileIdentifier, error) {
 	stats, err := f.Stat()
 	if err != nil {
 		return nil, err
 	}
-	ret := GetFileIdentifier(stats)
-	return &ret, nil
+	return GetFileIdentifier(stats)
 }
 
 // GetFileIdentifier returns the platform specific FileIdentifier
-func GetFileIdentifier(i os.FileInfo) (*FileIdentifier, error) {
+func GetFileIdentifier(i os.FileInfo) (FileIdentifier, error) {
 
 	/* not necessary
 	if !os.SameFile(i, i) {
@@ -74,7 +73,7 @@ func GetFileIdentifier(i os.FileInfo) (*FileIdentifier, error) {
 
 	// Get the two fields required to uniquely identify file
 	// https://golang.org/pkg/syscall/#Stat_t
-	return &FileIdentifier{
+	return &fileIdentifier{
 		device: uint64(stat.Dev),
 		inode:  uint64(stat.Ino),
 	}, nil
