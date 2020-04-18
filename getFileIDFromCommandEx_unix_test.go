@@ -51,16 +51,31 @@ DESCRIPTION
 */
 
 func getFileIDFromCommandEx(t *testing.T, file *os.File) *big.Int {
-	out, err := exec.Command("stat", "-c%i", file.Name()).Output()
+	/*
+		  out, err := exec.Command("stat", "-c%i", file.Name()).Output()
+			if err != nil {
+				t.Errorf("exec.Command(stat -c%%i %v).Output() failed: %v", file.Name(), err)
+		  }
+	*/
+	out, err := exec.Command("ls", "-i", file.Name()).Output()
 	if err != nil {
-		t.Errorf("exec.Command(stat -c%%i %v).Output() failed: %v", file.Name(), err)
+		t.Errorf("exec.Command(ls -i %v).Output() failed: %v", file.Name(), err)
 	}
 	expectedFileID := new(big.Int)
-	parseSource := strings.TrimRight(string(out), "\r\n")
+	/*
+		parseSource := strings.TrimRight(string(out), "\r\n")
+	*/
+	trimmed := strings.Trim(string(out), " \r\n")
+	splitted := strings.Split(trimmed, " ")
+	if len(splitted) != 2 {
+		t.Logf("len(splitted) != 2, got: %d", len(splitted))
+	}
+	parseSource := splitted[0]
 	_, ok := expectedFileID.SetString(parseSource, 10)
 	if !ok {
 		t.Logf("filename: %q", file.Name())
 		t.Logf("stat id output: %q", string(out))
+		t.Logf("trimmed: %q", trimmed)
 		t.Logf("parseSource: %q", parseSource)
 		t.Logf("stat id parsed: %q", expectedFileID.String())
 		t.Errorf("expectedFileID.SetString(%s, 16) failed", string(out))
