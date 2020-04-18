@@ -21,8 +21,8 @@ func (f FileIdentifier) GetDeviceID() uint64 {
 }
 
 // GetFileID returns the file id
-func (f FileIdentifier) GetFileID() *big.Int {
-	return getBigInt(f.inode, 0)
+func (f FileIdentifier) GetFileID() uint64 {
+	return f.inode
 }
 
 // GetGlobalFileID returns the file id

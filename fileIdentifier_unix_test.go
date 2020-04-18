@@ -68,7 +68,7 @@ func iterateAllFileIdentifier(cb func(globalId, expectedFileID *big.Int, dev, in
 			inodeBig := getBigInt(inode, 0)
 			expected.Add(expected, inodeBig)
 
-			cb(expected, inodeBig, dev, inode)
+			cb(expected, inode, dev, inode)
 
 			expected.Sub(expected, inodeBig)
 		})
@@ -79,20 +79,20 @@ func iterateAllFileIdentifier(cb func(globalId, expectedFileID *big.Int, dev, in
 func TestGetIDAllPossibleValuesUnix(t *testing.T) {
 	f := FileIdentifier{}
 
-	iterateAllFileIdentifier(func(globalId, expectedFileID *big.Int, dev, inode uint64) {
+	iterateAllFileIdentifier(func(globalId *big.Int, expectedFileID uint64, dev, inode uint64) {
 		f.device = dev
 		f.inode = inode
 
 		if f.GetDeviceID() != vol {
-			t.Errorf("compare failed, expected: %d, received: %d", vol, f.GetDeviceID())
+			t.Errorf("f.GetDeviceID() != vol, expected: %d, received: %d", vol, f.GetDeviceID())
 		}
 
 		if expected.Cmp(f.GetGlobalFileID()) != 0 {
-			t.Errorf("compare failed, expected: %s, received: %s", expected.String(), f.GetID().String())
+			t.Errorf("expected.Cmp(f.GetGlobalFileID()) != 0, expected: %s, received: %s", expected.String(), f.GetID().String())
 		}
 
-		if inodeBig.Cmp(f.GetFileID()) != 0 {
-			t.Errorf("compare failed, expected: %s, received: %s", inodeBig.String(), f.GetFileID().String())
+		if inodeBig != f.GetFileID() {
+			t.Errorf("inodeBig != f.GetFileID(), expected: %d, received: %d", inodeBig, f.GetFileID())
 		}
 
 		newF := GetFileIdentifierFromGetGlobalFileID(f.GetGlobalFileID())

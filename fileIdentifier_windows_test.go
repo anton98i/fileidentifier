@@ -148,15 +148,15 @@ func TestGetFileIdentifierStat(t *testing.T) {
 func TestGetIDAllPossibleValues(t *testing.T) {
 	iterateAllFileIdentifier(func(expected *big.Int, expectedFileID uint64, vol, idxHi, idxLo uint64, f FileIdentifier) {
 		if f.GetDeviceID() != vol {
-			t.Errorf("compare failed, expected: %d, received: %d", vol, f.GetDeviceID())
+			t.Errorf("f.GetDeviceID() != vol, expected: %d, received: %d", vol, f.GetDeviceID())
 		}
 
 		if expected.Cmp(f.GetGlobalFileID()) != 0 {
-			t.Errorf("compare failed, expected: %s, received: %s", expected, f.GetGlobalFileID())
+			t.Errorf("expected.Cmp(f.GetGlobalFileID()) != 0, expected: %s, received: %s", expected, f.GetGlobalFileID())
 		}
 
 		if expectedFileID != f.GetFileID() {
-			t.Errorf("compare failed, expected: %d, received: %d", expectedFileID, f.GetFileID())
+			t.Errorf("expectedFileID != f.GetFileID(), expected: %d, received: %d", expectedFileID, f.GetFileID())
 		}
 
 		checkFileIdentifierBasic(t, GetFileIdentifierFromGetGlobalFileID(f.GetGlobalFileID()), f)

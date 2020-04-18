@@ -2,6 +2,11 @@
 # FileIdentifier
 FileIdentifier as a go module that read the ID/Device ID of a a file on linux/windows as thais is a os specific operation.
 
+# install dependencies
+For windows we need the "golang.org/x/sys" package:
+``` bash
+go get ./..
+```
 
 ## Exported Functions to get a file identifier
 Ways to get a FileIdentifier:
