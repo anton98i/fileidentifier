@@ -3,7 +3,7 @@ package fileidentifier
 import (
 	"fmt"
 	"math/big"
-	"os"
+	"syscall"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -84,8 +84,17 @@ func (f fileIDInfoStrcut) GetFileID() (uint64, uint64) {
 	return bytes2String(f.FileID.arr[8:16]), bytes2String(f.FileID.arr[:8])
 }
 
-// GetFileIdentifierByFileEx method
-func GetFileIdentifierByFileEx(f *os.File) (FileIdentEx, error) {
+// GetFileIdentifierByPathEx method
+func GetFileIdentifierByPathEx(path string) (FileIdentEx, error) {
+	h, err := getHandleFromPath(path)
+	if err != nil {
+		return nil, err
+	}
+	defer syscall.CloseHandle(h)
+	return getFileIdentifierByHandleEx(h)
+}
+
+func getFileIdentifierByHandleEx(h syscall.Handle) (FileIdentEx, error) {
 	// https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyhandleex
 	// call with FileIdInfo (0x12) to get indexes: https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyhandleex#remarks
 	// https://docs.microsoft.com/de-de/windows/win32/api/winbase/ns-winbase-file_id_info
@@ -95,7 +104,7 @@ func GetFileIdentifierByFileEx(f *os.File) (FileIdentEx, error) {
 	// GetFileInformationByHandleEx in go src: https://golang.org/src/internal/syscall/windows/zsyscall_windows.go
 	// used GetFileInformationByHandleEx in x/sys: https://pkg.go.dev/golang.org/x/sys@v0.0.0-20200413165638-669c56c373c4/windows?tab=doc#GetFileInformationByHandleEx
 	var ti fileIDInfoStrcut
-	err := windows.GetFileInformationByHandleEx(windows.Handle(f.Fd()), fileIDInfo, (*byte)(unsafe.Pointer(&ti)), uint32(unsafe.Sizeof(ti)))
+	err := windows.GetFileInformationByHandleEx(windows.Handle(h), fileIDInfo, (*byte)(unsafe.Pointer(&ti)), uint32(unsafe.Sizeof(ti)))
 
 	if err != nil {
 		return nil, fmt.Errorf("GetFileInformationByHandleEx error: %v", err.Error())

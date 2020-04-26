@@ -48,17 +48,17 @@ func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier {
 	}
 }
 
-// GetFileIdentifierByFile method
-func GetFileIdentifierByFile(f *os.File) (FileIdentifier, error) {
-	stats, err := f.Stat()
+// GetFileIdentifierByPath method
+func GetFileIdentifierByPath(path string) (FileIdentifier, error) {
+	stats, err := os.Stat(path)
 	if err != nil {
 		return nil, err
 	}
-	return GetFileIdentifier(stats)
+	return getFileIdentifier(stats)
 }
 
-// GetFileIdentifier returns the platform specific FileIdentifier
-func GetFileIdentifier(i os.FileInfo) (FileIdentifier, error) {
+// getFileIdentifier returns the platform specific FileIdentifier
+func getFileIdentifier(i os.FileInfo) (FileIdentifier, error) {
 
 	/* not necessary
 	if !os.SameFile(i, i) {

@@ -1,9 +1,7 @@
 package fileidentifier
 
 import (
-	"fmt"
 	"math/big"
-	"os"
 )
 
 // FileIdentifier interface
@@ -38,26 +36,4 @@ func getBigInt(num uint64, n uint) *big.Int {
 	// Lsh: https://golang.org/src/math/big/int.go?s=25314:25352#L993
 	// shl: https://golang.org/src/math/big/nat.go#L981
 	return n1.Lsh(&n1, n)
-}
-
-// GetFileIdentifierByPath gets a fileidentifier by path
-// it just opens the path and calls GetFileIdentifierByFile
-func GetFileIdentifierByPath(path string) (FileIdentifier, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("GetFileIdentifierByPath open path %v error: %v", path, err)
-	}
-	defer f.Close()
-	return GetFileIdentifierByFile(f)
-}
-
-// GetFileIdentifierByPathEx gets a fileidentifier by path
-// it just opens the path and calls GetFileIdentifierByFile
-func GetFileIdentifierByPathEx(path string) (FileIdentEx, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("GetFileIdentifierByPathEx open path %v error: %v", path, err)
-	}
-	defer f.Close()
-	return GetFileIdentifierByFileEx(f)
 }

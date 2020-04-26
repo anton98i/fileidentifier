@@ -3,60 +3,59 @@
 package fileidentifier
 
 import (
-	"math/big"
+	"strconv"
 	"testing"
 )
 
-func iterateAllFileIdentifier(cb func(globalId *big.Int, expectedFileID, dev, inode uint64)) {
-	expected := big.NewInt(0)
-	iterateAllUint64(18446744073709551615, func(dev uint64) {
-		devBig := getBigInt(dev, 64)
-		expected.Add(expected, devBig)
-		iterateAllUint64(18446744073709551615, func(inode uint64) {
-			inodeBig := getBigInt(inode, 0)
-			expected.Add(expected, inodeBig)
-
-			cb(expected, inode, dev, inode)
-
-			expected.Sub(expected, inodeBig)
-		})
-		expected.Sub(expected, devBig)
-	})
+var testArr []struct {
+	device           uint64
+	inode            uint64
+	expectedGlobalID string
+	expectedFileID   uint64
 }
 
-func checkFileIdentifierBasic(t *testing.T, _f, _expected FileIdentifier) {
-	f := _f.(*fileIdentifier)
-	expected := _expected.(*fileIdentifier)
-	if f.device != expected.device {
-		t.Errorf("checkFileIdentifierBasic vol failed, expected: %d, received: %d", expected.device, f.device)
-	}
-	if f.inode != expected.inode {
-		t.Errorf("checkFileIdentifierBasic idxHi failed, expected: %d, received: %d", expected.inode, f.inode)
-	}
-	if f.GetFileID() != expected.GetFileID() {
-		t.Errorf("checkFileIdentifierBasic GetFileID failed, expected: %d, received: %d", expected.GetFileID(), f.GetFileID())
+func init() {
+	testArr = []struct {
+		device           uint64
+		inode            uint64
+		expectedGlobalID string
+		expectedFileID   uint64
+	}{
+		// result can get calculated by a full precision calculator like: https://www.mathsisfun.com/calculator-precision.html
+		{
+			device: 1234,
+			inode:  5678,
+			// (1234 * 2^64) + 5678
+			expectedGlobalID: "22763282211344411000922",
+			expectedFileID:   5678,
+		}, {
+			device: 18446744073709551614,
+			inode:  18446744073709551613,
+			// (18446744073709551614 * 2^64) + 18446744073709551613
+			expectedGlobalID: "22763282186957586699822",
+			expectedFileID:   18446744073709551613,
+		},
 	}
 }
 
-func TestGetIDAllPossibleValuesUnix(t *testing.T) {
+func TestGetID(t *testing.T) {
 	f := &fileIdentifier{}
 
-	iterateAllFileIdentifier(func(expected *big.Int, expectedFileID, dev, inode uint64) {
-		f.device = dev
-		f.inode = inode
+	for _, te := range testArr {
+		f.device = te.device
+		f.inode = te.inode
 
-		if f.GetDeviceID() != dev {
-			t.Errorf("f.GetDeviceID() != dev, expected: %d, received: %d", dev, f.GetDeviceID())
-		}
+		testIDsBasic(t, f, te.expectedGlobalID, te.expectedFileID, te.device)
+	}
+}
 
-		if expected.Cmp(f.GetGlobalFileID()) != 0 {
-			t.Errorf("expected.Cmp(f.GetGlobalFileID()) != 0, expected: %s, received: %s", expected.String(), f.GetGlobalFileID().String())
-		}
+func TestGetIDEx(t *testing.T) {
+	f := &fileIdentEx{}
 
-		if expectedFileID != f.GetFileID() {
-			t.Errorf("expectedFileID != f.GetFileID(), expected: %d, received: %d", expectedFileID, f.GetFileID())
-		}
+	for _, te := range testArr {
+		f.device = te.device
+		f.inode = te.inode
 
-		checkFileIdentifierBasic(t, GetFileIdentifierFromGetGlobalFileID(f.GetGlobalFileID()), f)
-	})
+		testIDsBasicEx(t, f, te.expectedGlobalID, strconv.FormatUint(te.expectedFileID, 10), te.device)
+	}
 }

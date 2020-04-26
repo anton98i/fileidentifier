@@ -50,11 +50,20 @@ func (f fileIdentifier) GetFileID() uint64 {
 	return uint64(f.idxHi)<<32 + uint64(f.idxLo)
 }
 
-// GetFileIdentifierByFile method
-func GetFileIdentifierByFile(f *os.File) (FileIdentifier, error) {
+// GetFileIdentifierByPath method
+func GetFileIdentifierByPath(path string) (FileIdentifier, error) {
+	h, err := getHandleFromPath(path)
+	if err != nil {
+		return nil, fmt.Errorf("getHandleFromPath error: %v", err)
+	}
+	defer syscall.CloseHandle(h)
+	return getFileIdentifierByHandle(h)
+}
+
+func getFileIdentifierByHandle(handle syscall.Handle) (FileIdentifier, error) {
 	// get file id's like in the go implementation newFileStatFromGetFileInformationByHandle https://golang.org/src/os/types_windows.go#L44
 	var d syscall.ByHandleFileInformation
-	err := syscall.GetFileInformationByHandle(syscall.Handle(f.Fd()), &d)
+	err := syscall.GetFileInformationByHandle(handle, &d)
 
 	if err != nil {
 		return nil, fmt.Errorf("GetFileInformationByHandle error: %v", err.Error())
@@ -67,22 +76,24 @@ func GetFileIdentifierByFile(f *os.File) (FileIdentifier, error) {
 	}, nil
 }
 
-// GetFileIdentifier returns the platform specific FileIdentifier
-func GetFileIdentifier(i os.FileInfo) (FileIdentifier, error) {
+// getFileIdentifier returns the platform specific FileIdentifier
+// not reliable (for lang paths as loadFileIds do not use fixLongPath) => not used for now, maybe later
+func getFileIdentifier(i os.FileInfo) (FileIdentifier, error) {
 	// according to that is the file id in fileInfo stored as private value that are used for samefile
 	// https://golang.org/src/os/types_windows.go#L65
 	// according to that gets the file information allways loaded and skipped if already done =>
 	// https://golang.org/src/os/types_windows.go#L216
 	// => call SameFile to make the the values are set
 	// os.FileInfo is a interface, which is a pointer
-	//
+
 	// it is already filled called with stat method of a file it https://golang.org/src/os/stat_windows.go#L15
 	if !os.SameFile(i, i) {
 		// the implementation of SameFile will return false if on any file occurred an error
+		// a error also occurs, if the path is too lang..... not so good go implementation
 		return nil, fmt.Errorf("error getting ids")
 	}
 
-	// get fileStat through reflection as otherwise they not accessible because they are private
+	// get fileStat through reflection as they are not accessible string because they are private
 	// https://golang.org/src/os/types_windows.go#L65
 	fileStat := reflect.ValueOf(i).Elem()
 

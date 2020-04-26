@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/anton98i/fileIdentifier.svg?branch=master)](https://travis-ci.org/anton98i/fileIdentifier)
+[![GoDoc](https://godoc.org/github.com/thylong/ian?status.svg)](https://godoc.org/github.com/anton98i/fileidentifier)
 # FileIdentifier
 FileIdentifier as a go module that read the ID/Device ID of a a file on linux/windows as thais is a os specific operation.
 
@@ -7,23 +8,6 @@ For windows we need the "golang.org/x/sys" package:
 ``` bash
 go get ./..
 ```
-
-## Exported Functions to get a file identifier
-Ways to get a FileIdentifier:
-
-``` go
-func GetFileIdentifierByFile(f *os.File) (FileIdentifier, error)
-```
-``` go
-func GetFileIdentifierByFileEx(f *os.File) (FileIdentEx, error)
-```
-
-
-A FileIdentifier can also be received by a os.FileInfo, but that uses at windows private fields which go might change later.
-``` go
-func GetFileIdentifier(i os.FileInfo) (FileIdentifier, error)
-```
-
 
 ## Exported interfaces
 ``` go
@@ -53,22 +37,22 @@ type FileIdentEx interface {
 ```
 
 The difference between these two types is only at windows a difference:
-*  FileIdentEx uses a uint64 device ID instead of uint32
+*  FileIdentEx uses a uint64 device ID instead of uint32 => device id is cutted at windows :/
 *  FileIdentEx uses a "uint128" file ID instead of a uint64 => according to windows documentation are 128 bit IDs used at ReFS
 
+
 ## Exported Functions to get a file identifier
-2 Ways to get FileIdentifier:
+Ways to get a FileIdentifier:
 
-
-GetFileIdentifierByFile
-
-The return value of GetGlobalFileID can get used to create the FileIdentifier again. Needs to be on same os to work correctly.
 ``` go
-func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier
+func GetFileIdentifierByPath(path string) (FileIdentifier, error)
 ```
+
+Ways to get a "extended" FileIdentifier:
 ``` go
-func GetFileIdentifierFromGetGlobalFileIDEx(n *big.Int) FileIdentEx
+func GetFileIdentifierByPathEx(path string) (FileIdentifier, error)
 ```
+
 
 ## Run build
 ``` bash
