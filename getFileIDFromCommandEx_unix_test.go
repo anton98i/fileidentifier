@@ -16,7 +16,9 @@ func getFileIDFromCommandExByName(t *testing.T, path string) *big.Int {
 			t.Errorf("exec.Command(stat -c%%i %v).Output() failed: %v", path, err)
 	  }
 	*/
-	out, err := exec.Command("ls", "-i", path).Output()
+	// -d shows the info of the directory instead of the file inside
+	// -i shows the inode
+	out, err := exec.Command("ls", "-d", "-i", path).Output()
 	if err != nil {
 		t.Errorf("exec.Command(ls -i %v).Output() failed: %v", path, err)
 	}
@@ -37,7 +39,10 @@ func getFileIDFromCommandExByName(t *testing.T, path string) *big.Int {
 		t.Logf("trimmed: %q", trimmed)
 		t.Logf("parseSource: %q", parseSource)
 		t.Logf("stat id parsed: %q", expectedFileID.String())
-		t.Errorf("expectedFileID.SetString(%s, 16) failed", string(out))
+		t.Logf("expectedFileID.SetString(%s, 16) failed", string(out))
+		if !ok {
+			t.FailNow()
+		}
 	}
 	return expectedFileID
 }

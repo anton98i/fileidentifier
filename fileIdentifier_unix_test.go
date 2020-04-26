@@ -26,13 +26,13 @@ func init() {
 			device: 1234,
 			inode:  5678,
 			// (1234 * 2^64) + 5678
-			expectedGlobalID: "22763282211344411000922",
+			expectedGlobalID: "22763282186957586699822",
 			expectedFileID:   5678,
 		}, {
 			device: 18446744073709551614,
 			inode:  18446744073709551613,
 			// (18446744073709551614 * 2^64) + 18446744073709551613
-			expectedGlobalID: "22763282186957586699822",
+			expectedGlobalID: "340282366920938463444927863358058659837",
 			expectedFileID:   18446744073709551613,
 		},
 	}
@@ -50,11 +50,12 @@ func TestGetID(t *testing.T) {
 }
 
 func TestGetIDEx(t *testing.T) {
-	f := &fileIdentEx{}
+	f2 := &fileIdentifier{}
+	f := &fileIdentEx{f: f2}
 
 	for _, te := range testArr {
-		f.device = te.device
-		f.inode = te.inode
+		f2.device = te.device
+		f2.inode = te.inode
 
 		testIDsBasicEx(t, f, te.expectedGlobalID, strconv.FormatUint(te.expectedFileID, 10), te.device)
 	}

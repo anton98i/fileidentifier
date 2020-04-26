@@ -50,7 +50,7 @@ func GetFileIdentifierFromGetGlobalFileID(n *big.Int) FileIdentifier {
 
 // GetFileIdentifierByPath method
 func GetFileIdentifierByPath(path string) (FileIdentifier, error) {
-	stats, err := os.Stat(path)
+	stats, err := os.Lstat(path)
 	if err != nil {
 		return nil, err
 	}

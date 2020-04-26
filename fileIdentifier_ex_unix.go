@@ -28,9 +28,8 @@ func (f *fileIdentEx) GetGlobalFileID() *big.Int {
 
 // GetFileIdentifierFromGetGlobalFileID returns a FileIdentifier by a GlobalFileID
 func GetFileIdentifierFromGetGlobalFileIDEx(n *big.Int) FileIdentEx {
-	info := GetFileIdentifierFromGetGlobalFileID(n)
 	return &fileIdentEx{
-		f: info,
+		f: GetFileIdentifierFromGetGlobalFileID(n),
 	}
 }
 

@@ -15,7 +15,6 @@ func getFileIDFromCommandExByName(t *testing.T, filename string) *big.Int {
 	splitted := strings.Split(string(out), "0x")
 	if len(splitted) != 2 {
 		t.Errorf("out (%s) is no in the correct format, expected someting like: 'Datei-ID: 0x000000000000000000030000000618a1'", out)
-		t.FailNow()
 	}
 	expectedFileID := new(big.Int)
 	parseSource := strings.TrimRight(splitted[1], "\r\n")
@@ -26,7 +25,10 @@ func getFileIDFromCommandExByName(t *testing.T, filename string) *big.Int {
 		t.Logf("splitted[0]: %q", splitted[0])
 		t.Logf("splitted[1]: %q", splitted[1])
 		t.Logf("parseSource: %q", parseSource)
-		t.Errorf("fsutil id parsed: %s", expectedFileID.String())
+		t.Logf("fsutil id parsed: %s", expectedFileID.String())
+		if !ok {
+			t.FailNow()
+		}
 	}
 	return expectedFileID
 }
